@@ -1,4 +1,4 @@
-import sqlite3, random
+import sqlite3, random, parser
 
 
 class Player:
@@ -22,10 +22,13 @@ class Player:
 
 
 class Score:
-	def __init__(self, start, legs_to_win, player_one="Player 1", player_two="Player 2"):
+	def __init__(self, start, legs_to_win, player_to_start, player_one="Player 1", player_two="Player 2"):
 		self.player_one = Player(player_one)
 		self.player_two = Player(player_two)
-		self.turn = 1
+		if player_to_start == 1:
+			self.turn = 1
+		else:
+			self.turn = 2
 		self.legs_to_win = legs_to_win
 		self.start_score = start
 		self.player_one.set_score(self.start_score)
@@ -51,7 +54,8 @@ class Score:
 
 	def check_game_existence(self, game_id):
 		value = self.c.execute("""SELECT game_ID FROM Games WHERE game_ID = ?""", (game_id,))
-		if value is None:
+		value = value.fetchall()
+		if not value:
 			return False
 		else:
 			return True
@@ -90,11 +94,12 @@ class Score:
 			return {"winner":None}
 
 	def undo_turn(self):
-		if self.turn == 1:
-			raise ValueError("Cannot undo past first turn")
 		self.turn -= 1
 		self.c.execute("SELECT * FROM Games WHERE game_ID = ? AND turn_no = ?",(self.game_id,self.turn))
 		values = self.c.fetchone()
+		if not values:
+			self.turn += 1
+			raise ValueError("Cannot undo past first turn")
 		self.player_one.set_score(values[2])
 		self.player_two.set_score(values[3])
 		self.player_one.set_legs(values[4])
@@ -114,3 +119,6 @@ class Score:
 		except IndexError:
 			self.turn -= 1
 			raise ValueError("Cannot redo as there is no data to return")
+
+	def parse_string_input(self, calculation):
+		return eval(parser.expr(calculation).compile())
