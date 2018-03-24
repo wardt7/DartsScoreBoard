@@ -74,7 +74,8 @@ class Score:
 			self.player_one.set_legs(self.player_one.get_legs()+1)
 		else:
 			self.player_two.set_legs(self.player_two.get_legs()+1)
-		self.c.execute("""INSERT OR REPLACE INTO Games VALUES (?,?,?,?,?,?,?) WHERE game_id =""", (self.game_id,
+		self.turn += 1
+		self.c.execute("""INSERT OR REPLACE INTO Games VALUES (?,?,?,?,?,?,?)""", (self.game_id,
 																				   self.turn,
 																				   self.player_one.get_score(),
 																				   self.player_two.get_score(),

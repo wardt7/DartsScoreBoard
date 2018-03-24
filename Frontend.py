@@ -100,6 +100,8 @@ class interfaceScoreboard:
 		self.inter.mainloop()
 
 	def remove_leg(self, player):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{REMOVELEG};"))
 		if player == 1:
 			update = self.scorer.remove_leg(1)
 		else:
@@ -111,6 +113,8 @@ class interfaceScoreboard:
 			self.player_two_legs.set(self.scorer.player_two.get_legs())
 
 	def add_leg(self, player):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{ADDLEG};"))
 		if player == 1:
 			update = self.scorer.add_leg(1)
 		else:
@@ -119,15 +123,22 @@ class interfaceScoreboard:
 		self.player_two_legs.set(self.scorer.player_two.get_legs())
 		if update["winner"] is not None:
 			return self.winner(player)
+		else:
+			if self.scorer.turn % 2 == 1:
+				self.change_style(1)
+			elif self.scorer.turn % 2 == 0:
+				self.change_style(2)
 
 	def keypad(self, value):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str(value)+";")
 		if type(value) == int:
 			self.calculation_input_display.set(self.calculation_input_display.get()+str(value))
 			self.calculation_input_actual = self.calculation_input_actual + str(value)
 		else:
 			try:
 				if self.calculation_input_actual[-1] == "+" or self.calculation_input_actual[-1] == "*":
-					return self.error("Can't have two + or two X operators in a row")
+					return self.error("Can't have two + or X operators in a row")
 				else:
 					if value == "+":
 						self.calculation_input_display.set(self.calculation_input_display.get() + value)
@@ -139,6 +150,8 @@ class interfaceScoreboard:
 				return self.error("Can't start input with + or X")
 
 	def delete(self):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{DELETE};"))
 		if len(self.calculation_input_actual) == 0:
 			return self.error("Can't delete when input is empty")
 		else:
@@ -146,6 +159,8 @@ class interfaceScoreboard:
 			self.calculation_input_actual = self.calculation_input_actual[:-1]
 
 	def enter(self):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{ENTER};"))
 		current_score = self.scorer.parse_string_input(self.calculation_input_actual)
 		if self.scorer.turn % 2 == 1:
 			update = self.scorer.add_turn(1, current_score)
@@ -177,6 +192,8 @@ class interfaceScoreboard:
 			ttk.Style().configure(style="CurrentPlayer.TButton", font=self.font_small, background="#77d4ff")
 
 	def error(self, message):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{ERROR: " + message + "};"))
 		error_window = Toplevel()
 		error_window.resizable(False,False)
 		error_window.title("ERROR")
@@ -185,18 +202,20 @@ class interfaceScoreboard:
 		error_window["background"] = "White"
 		error_message = ttk.Label(error_window, text=message, font=self.font_small, style="TLabel", padding=5)
 		error_message.grid(column=0, row=0)
-		error_button = ttk.Button(error_window, command=error_window.destroy, text="Ok", padding=3, width=5, style="TButton")
+		error_button = ttk.Button(error_window, command=error_window.destroy, text="Ok", padding=3, width=5, style="Green.TButton")
 		error_button.grid(column=0,row=1, sticky=(N,W,E,S))
 		error_window.mainloop()
 
 	def winner(self, player):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{WINNER};"))
 		winner_window = Toplevel()
 		winner_window.resizable(False, False)
 		winner_window.title("ERROR")
 		winner_window.columnconfigure(0, weight=1)
 		winner_window.rowconfigure(0, weight=1)
 		winner_window["background"] = "White"
-		winner_message = ttk.Label(winner_window, text="Player {} wins!".format(player), font=self.font_small, style="TLabel", padding=5)
+		winner_message = ttk.Label(winner_window, text="{} wins!".format(player), font=self.font_small, style="TLabel", padding=5)
 		winner_message.grid(column=0, row=0, columnspan=2)
 		winner_ok_button = ttk.Button(winner_window, command=lambda: self.inter.destroy(), text="Ok", padding=3, width=5,
 								  style="Green.TButton")
@@ -206,6 +225,8 @@ class interfaceScoreboard:
 		winner_window.mainloop()
 
 	def undo(self):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{UNDO};"))
 		try:
 			update = self.scorer.undo_turn()
 		except ValueError:
@@ -226,6 +247,8 @@ class interfaceScoreboard:
 		window.destroy()
 
 	def redo(self):
+		with open("keylog.txt", "a") as keylogger:
+			keylogger.write(str("{REDO};"))
 		try:
 			update = self.scorer.redo_turn()
 		except ValueError:
